@@ -1,0 +1,141 @@
+<main>
+  <header class="flex items-center justify-between">
+    <div>
+      <h1 class="font-bold text-lg">Home</h1>
+      <p class="text-slate-400">Monitor all your tasks here</p>
+    </div>
+    <div>
+      <div class="relative">
+        <i
+          class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+        ></i>
+        <input
+          class="bg-slate-200 outline-none focus:outline-slate-300 focus:outline-2 text-gray-800 rounded-md py-2 pl-10 pr-4 w-full"
+          type="search"
+          placeholder="Search anything..."
+          name="search"
+          id="search"
+        />
+      </div>
+    </div>
+  </header>
+
+  <section class="grid grid-cols-3 gap-4 mt-6">
+    <!-- Total Tasks Card -->
+    <div class="bg-white shadow-md rounded-lg p-6 border border-gray-100">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-sm text-gray-500">Total Tasks</h3>
+          <p
+            class="text-2xl font-bold"
+            [ngClass]="{
+              'text-gray-400': totalTasks === 0,
+              'text-gray-800': totalTasks !== 0
+            }"
+          >
+            {{ totalTasks }}
+          </p>
+        </div>
+        <i class="fas fa-tasks text-blue-500 text-2xl"></i>
+      </div>
+      <div class="mt-4 h-1 w-full bg-gray-200 rounded-full">
+        <div class="h-1 bg-blue-500 rounded-full w-full"></div>
+      </div>
+    </div>
+
+    <!-- Pending Tasks Card -->
+    <div class="bg-white shadow-md rounded-lg p-6 border border-gray-100">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-sm text-gray-500">Pending Tasks</h3>
+          <p class="text-2xl font-bold text-orange-600">{{ pendingTasks }}</p>
+        </div>
+        <i class="fas fa-spinner text-orange-500 text-2xl"></i>
+      </div>
+      <div class="mt-4 h-1 w-full bg-gray-200 rounded-full">
+        <div
+          class="h-1 bg-orange-500 rounded-full"
+          [style.width.%]="(pendingTasks / totalTasks) * 100"
+        ></div>
+      </div>
+    </div>
+
+    <!-- Completed Tasks Card -->
+    <div class="bg-white shadow-md rounded-lg p-6 border border-gray-100">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-sm text-gray-500">Completed Tasks</h3>
+          <p class="text-2xl font-bold text-green-600">{{ completedTasks }}</p>
+        </div>
+        <i class="fas fa-check-circle text-green-500 text-2xl"></i>
+      </div>
+      <div class="mt-4 h-1 w-full bg-gray-200 rounded-full">
+        <div
+          class="h-1 bg-green-500 rounded-full"
+          [style.width.%]="(completedTasks / totalTasks) * 100"
+        ></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Buttons section -->
+  <section class="flex justify-end items-center mt-6">
+    <div class="flex gap-4">
+      <button
+        type="button"
+        class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md"
+      >
+        Add New Task
+      </button>
+      <button
+        type="button"
+        class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md"
+      >
+        Delete All Tasks
+      </button>
+    </div>
+  </section>
+
+  <!-- Task Creation Form -->
+  <section class="mt-6 bg-white shadow-md rounded-lg p-6">
+    <h2 class="text-xl font-bold mb-4">Create New Task</h2>
+    <form (ngSubmit)="onSubmit()" #taskForm="ngForm">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label for="title" class="block text-sm font-medium text-gray-700"
+            >Title</label
+          >
+          <input
+            type="text"
+            id="title"
+            name="title"
+            [(ngModel)]="newTask.title"
+            required
+            class="bg-slate-200 outline-none focus:outline-slate-300 focus:outline-2 text-gray-800 rounded-md py-2 pl-2 pr-4 w-full mt-4"
+          />
+        </div>
+        <div>
+          <label
+            for="description"
+            class="block text-sm font-medium text-gray-700"
+            >Description</label
+          >
+          <textarea
+            id="description"
+            name="description"
+            [(ngModel)]="newTask.description"
+            required
+            class="bg-slate-200 outline-none focus:outline-slate-300 focus:outline-2 text-gray-800 rounded-md py-2 pl-2 pr-4 w-full mt-4"
+          ></textarea>
+        </div>
+      </div>
+      <button
+        type="submit"
+        [disabled]="!taskForm.form.valid"
+        class="mt-4 w-full bg-black text-white py-2 rounded-md disabled:opacity-70"
+      >
+        Create Task
+      </button>
+    </form>
+  </section>
+</main>

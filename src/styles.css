@@ -1,1 +1,8 @@
 /* You can add global styles to this file, and also import other style files */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.active-link {
+  @apply font-bold bg-white rounded-md block w-full py-1 px-2;
+}
