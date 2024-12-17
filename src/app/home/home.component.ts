@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { IndexedDbService, Task } from '../services/dbService';
+import { BehaviorSubject } from 'rxjs';
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
@@ -121,6 +122,9 @@ import { IndexedDbService, Task } from '../services/dbService';
   `,
 })
 export class HomeComponent implements OnInit {
+  showModal = false;
+  private tasksSubject = new BehaviorSubject<Task[]>([]);
+  tasks$ = this.tasksSubject.asObservable();
   tasks: Task[] = [];
   newTask = {
     title: '',
@@ -143,7 +147,9 @@ export class HomeComponent implements OnInit {
     this.loadTasks();
   }
   async loadTasks() {
-    this.tasks = await this.indexedDbService.getTasks();
+    const tasks = await this.indexedDbService.getTasks();
+    this.tasks = tasks;
+    this.tasksSubject.next(tasks);
   }
   async onSubmit() {
     try {
@@ -155,8 +161,16 @@ export class HomeComponent implements OnInit {
         status: 'pending',
         createdAt: new Date(),
       };
+      this.showModal = false
     } catch (error) {
       console.error('Error adding task', error);
     }
+  }
+  getPendingTasksCount(): number {
+    return this.tasks.filter(function(task) { return task.status === 'pending'; }).length;
+  }
+
+  getCompletedTasksCount(): number {
+    return this.tasks.filter(function(task) { return task.status === 'completed'; }).length;
   }
 }

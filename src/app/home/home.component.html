@@ -1,3 +1,64 @@
+<div class="modal" [class.hidden]="!showModal">
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-1/2">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold">Add New Task</h2>
+        <button (click)="showModal = false" class="text-gray-500 hover:text-gray-700">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <form (ngSubmit)="onSubmit()">
+        <div class="mb-4">
+          <label for="title" class="block text-gray-700 font-medium mb-2">Title</label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            [(ngModel)]="newTask.title"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          >
+        </div>
+        
+        <div class="mb-4">
+          <label for="description" class="block text-gray-700 font-medium mb-2">Description</label>
+          <textarea
+            id="description"
+            name="description"
+            [(ngModel)]="newTask.description"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            rows="3"
+          ></textarea>
+        </div>
+        
+        <div class="flex justify-end gap-2">
+          <button
+            type="button"
+            (click)="showModal = false"
+            class="px-4 py-2 text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600"
+          >
+            Add Task
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<button 
+  (click)="showModal = true"
+  class="fixed bottom-6 right-6 bg-blue-500 text-white rounded-lg px-4 py-2 shadow-lg hover:bg-blue-600"
+>Add task
+  <i class="fas fa-plus pl-3"></i>
+</button>
+
 <main>
   <header class="flex items-center justify-between">
     <div>
@@ -22,18 +83,18 @@
 
   <section class="grid grid-cols-3 gap-4 mt-6">
     <!-- Total Tasks Card -->
-    <div class="bg-white shadow-md rounded-lg p-6 border border-gray-100">
+    <div class="bg-white shadow-md rounded-lg p-6 border border-gray-100" *ngIf="tasks$ | async as tasks">
       <div class="flex items-center justify-between">
         <div>
           <h3 class="text-sm text-gray-500">Total Tasks</h3>
           <p
             class="text-2xl font-bold"
             [ngClass]="{
-              'text-gray-400': totalTasks === 0,
-              'text-gray-800': totalTasks !== 0
+              'text-gray-400': tasks.length === 0,
+              'text-gray-800': tasks.length !== 0
             }"
           >
-            {{ totalTasks }}
+            {{ tasks.length }}
           </p>
         </div>
         <i class="fas fa-tasks text-blue-500 text-2xl"></i>
@@ -44,98 +105,45 @@
     </div>
 
     <!-- Pending Tasks Card -->
-    <div class="bg-white shadow-md rounded-lg p-6 border border-gray-100">
+    <div class="bg-white shadow-md rounded-lg p-6 border border-gray-100" *ngIf="tasks$ | async as tasks">
       <div class="flex items-center justify-between">
         <div>
           <h3 class="text-sm text-gray-500">Pending Tasks</h3>
-          <p class="text-2xl font-bold text-orange-600">{{ pendingTasks }}</p>
+          <p class="text-2xl font-bold text-orange-600">
+            {{ tasks | filterTasks:'pending' }}
+          </p>
         </div>
         <i class="fas fa-spinner text-orange-500 text-2xl"></i>
       </div>
       <div class="mt-4 h-1 w-full bg-gray-200 rounded-full">
         <div
           class="h-1 bg-orange-500 rounded-full"
-          [style.width.%]="(pendingTasks / totalTasks) * 100"
+          [style.width.%]="(tasks | filterTasks:'pending') / tasks.length * 100"
         ></div>
       </div>
     </div>
 
     <!-- Completed Tasks Card -->
-    <div class="bg-white shadow-md rounded-lg p-6 border border-gray-100">
+    <div class="bg-white shadow-md rounded-lg p-6 border border-gray-100" *ngIf="tasks$ | async as tasks">
       <div class="flex items-center justify-between">
         <div>
           <h3 class="text-sm text-gray-500">Completed Tasks</h3>
-          <p class="text-2xl font-bold text-green-600">{{ completedTasks }}</p>
+          <p class="text-2xl font-bold text-green-600">
+            {{ tasks | filterTasks:'completed' }}
+          </p>
         </div>
         <i class="fas fa-check-circle text-green-500 text-2xl"></i>
       </div>
       <div class="mt-4 h-1 w-full bg-gray-200 rounded-full">
         <div
           class="h-1 bg-green-500 rounded-full"
-          [style.width.%]="(completedTasks / totalTasks) * 100"
+          [style.width.%]="(tasks | filterTasks:'completed') / tasks.length * 100"
         ></div>
       </div>
     </div>
-  </section>
 
-  <!-- Buttons section -->
-  <section class="flex justify-end items-center mt-6">
-    <div class="flex gap-4">
-      <button
-        type="button"
-        class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md"
-      >
-        Add New Task
-      </button>
-      <button
-        type="button"
-        class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md"
-      >
-        Delete All Tasks
-      </button>
-    </div>
   </section>
+ 
 
-  <!-- Task Creation Form -->
-  <section class="mt-6 bg-white shadow-md rounded-lg p-6">
-    <h2 class="text-xl font-bold mb-4">Create New Task</h2>
-    <form (ngSubmit)="onSubmit()" #taskForm="ngForm">
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label for="title" class="block text-sm font-medium text-gray-700"
-            >Title</label
-          >
-          <input
-            type="text"
-            id="title"
-            name="title"
-            [(ngModel)]="newTask.title"
-            required
-            class="bg-slate-200 outline-none focus:outline-slate-300 focus:outline-2 text-gray-800 rounded-md py-2 pl-2 pr-4 w-full mt-4"
-          />
-        </div>
-        <div>
-          <label
-            for="description"
-            class="block text-sm font-medium text-gray-700"
-            >Description</label
-          >
-          <textarea
-            id="description"
-            name="description"
-            [(ngModel)]="newTask.description"
-            required
-            class="bg-slate-200 outline-none focus:outline-slate-300 focus:outline-2 text-gray-800 rounded-md py-2 pl-2 pr-4 w-full mt-4"
-          ></textarea>
-        </div>
-      </div>
-      <button
-        type="submit"
-        [disabled]="!taskForm.form.valid"
-        class="mt-4 w-full bg-black text-white py-2 rounded-md disabled:opacity-70"
-      >
-        Create Task
-      </button>
-    </form>
-  </section>
+
 </main>
