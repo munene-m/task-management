@@ -13,78 +13,117 @@ export interface Task {
 })
 export class IndexedDbService {
   private db: IDBDatabase | null = null;
+  private dbOpenPromise: Promise<void>;
 
   constructor() {
-    this.openDatabase();
+    this.dbOpenPromise = this.openDatabase();
   }
 
   private openDatabase(): Promise<void> {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open('TaskHubDatabase', 1);
-
+      
       request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result;
         const objectStore = db.createObjectStore('tasks', {
           keyPath: 'id',
           autoIncrement: true,
         });
-
+        
         // Create indexes
         objectStore.createIndex('status', 'status', { unique: false });
         objectStore.createIndex('createdAt', 'createdAt', { unique: false });
       };
-
+      
       request.onsuccess = (event) => {
         this.db = (event.target as IDBOpenDBRequest).result;
         resolve();
       };
-
+      
       request.onerror = (event) => {
         reject(`IndexedDB error: ${(event.target as IDBOpenDBRequest).error}`);
       };
     });
   }
 
-  addTask(task: Task): Promise<number> {
+  private async ensureDatabaseIsOpen(): Promise<void> {
+    if (!this.db) {
+      await this.dbOpenPromise;
+    }
+  }
+
+  async addTask(task: Task): Promise<number> {
+    await this.ensureDatabaseIsOpen();
+    
     return new Promise((resolve, reject) => {
       if (!this.db) {
         reject('Database not opened');
         return;
       }
-
+      
       const transaction = this.db.transaction(['tasks'], 'readwrite');
       const objectStore = transaction.objectStore('tasks');
+      
       const request = objectStore.add({
         ...task,
         createdAt: new Date(),
       });
-
+      
       request.onsuccess = (event) => {
         this.getTasks();
         resolve((event.target as IDBRequest).result as number);
       };
-
+      
       request.onerror = (event) => {
         reject(`Error adding task: ${(event.target as IDBRequest).error}`);
       };
     });
   }
 
-  getTasks(): Promise<Task[]> {
+  async deleteTask(id: number): Promise<void> {
+    await this.ensureDatabaseIsOpen();
+    
     return new Promise((resolve, reject) => {
       if (!this.db) {
         reject('Database not opened');
         return;
       }
+      
+      const transaction = this.db.transaction(['tasks'], 'readwrite');
+      const objectStore = transaction.objectStore('tasks');
+      
+      const request = objectStore.delete(id);
+      console.log(request)
+      
+      request.onsuccess = () => {
+        resolve();
+      };
+      
+      request.onerror = (event) => {
+        console.log("error deleting task", event)
+        reject(`Error deleting task: ${(event.target as IDBRequest).error}`);
+      };
+    });
+  }
 
+  async getTasks(): Promise<Task[]> {
+    await this.ensureDatabaseIsOpen();
+    
+    return new Promise((resolve, reject) => {
+      if (!this.db) {
+        reject('Database not opened');
+        return;
+      }
+      
       const transaction = this.db.transaction(['tasks'], 'readonly');
       const objectStore = transaction.objectStore('tasks');
+      
       const request = objectStore.getAll();
-
+      
       request.onsuccess = (event) => {
         resolve((event.target as IDBRequest).result);
       };
-
+      
       request.onerror = (event) => {
         reject(`Error getting tasks: ${(event.target as IDBRequest).error}`);
       };
