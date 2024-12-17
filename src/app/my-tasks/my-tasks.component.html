@@ -1,1 +1,59 @@
-<p>my-tasks works!</p>
+<div class="container mx-auto px-4">
+  <!-- Search Bar -->
+  <div class="mb-6">
+    <div class="relative">
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        placeholder="Search tasks by title..."
+        class="w-full px-4 py-2 pl-10 pr-4 text-gray-700 bg-white border rounded-lg focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40"
+      />
+      <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+    </div>
+  </div>
+
+  <!-- Tasks Table -->
+  <div class="bg-white shadow-md rounded-lg overflow-hidden">
+    <table class="min-w-full table-auto">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        <tr *ngFor="let task of (tasks$ | async)?.length ? (tasks$ | async | filter:searchTerm) : []" class="hover:bg-gray-50">
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm font-medium text-gray-900">{{task.title}}</div>
+          </td>
+          <td class="px-6 py-4">
+            <div class="text-sm text-gray-500">{{task.description}}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                  [ngClass]="{
+                    'bg-yellow-100 text-yellow-800': task.status === 'pending',
+                    'bg-green-100 text-green-800': task.status === 'completed'
+                  }">
+              {{task.status}}
+            </span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-500">{{task.createdAt | date:'medium'}}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+            <button class="text-blue-600 hover:text-blue-900 mr-3">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button (click)="deleteTask(task.id ?? 0)" class="text-red-600 hover:text-red-900">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
