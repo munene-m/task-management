@@ -80,6 +80,50 @@ export class IndexedDbService {
     });
   }
 
+  async editTask(id: number, updatedFields: Partial<Task>): Promise<void> {
+    await this.ensureDatabaseIsOpen();
+  
+    return new Promise((resolve, reject) => {
+      if (!this.db) {
+        reject('Database not opened');
+        return;
+      }
+  
+      const transaction = this.db.transaction(['tasks'], 'readwrite');
+      const objectStore = transaction.objectStore('tasks');
+  
+      // Fetch the existing task
+      const getRequest = objectStore.get(id);
+  
+      getRequest.onsuccess = (event) => {
+        const existingTask = (event.target as IDBRequest).result;
+        if (!existingTask) {
+          reject('Task not found');
+          return;
+        }
+  
+        // Merge existing task with updated fields
+        const updatedTask = { ...existingTask, ...updatedFields };
+  
+        // Update the task in the database
+        const putRequest = objectStore.put(updatedTask);
+  
+        putRequest.onsuccess = () => {
+          resolve();
+        };
+  
+        putRequest.onerror = (event) => {
+          reject(`Error updating task: ${(event.target as IDBRequest).error}`);
+        };
+      };
+  
+      getRequest.onerror = (event) => {
+        reject(`Error fetching task: ${(event.target as IDBRequest).error}`);
+      };
+    });
+  }
+  
+
   async deleteTask(id: number): Promise<void> {
     await this.ensureDatabaseIsOpen();
     
