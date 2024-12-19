@@ -54,6 +54,11 @@
             </button>
           </td>
         </tr>
+        <tr *ngIf="(tasks$ | async)?.length && (tasks$ | async | filter:searchTerm)?.length === 0">
+          <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+            No tasks match your search criteria
+          </td>
+        </tr>
       </tbody>
     </table>
   </div>
