@@ -33,7 +33,7 @@
             <div class="text-sm text-gray-500">{{task.description}}</div>
           </td>
           <td class="px-6 py-4 whitespace-nowrap">
-            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+            <span class="px-3 inline-flex text-xs uppercase leading-5 font-semibold rounded-full"
                   [ngClass]="{
                     'bg-yellow-100 text-yellow-800': task.status === 'pending',
                     'bg-green-100 text-green-800': task.status === 'completed'
@@ -45,9 +45,10 @@
             <div class="text-sm text-gray-500">{{task.createdAt | date:'medium'}}</div>
           </td>
           <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-            <button class="text-blue-600 hover:text-blue-900 mr-3">
+            <button (click)="editTask(task.id ?? 0)" class="text-blue-600 hover:text-blue-900 mr-3">
               <i class="fas fa-edit"></i>
             </button>
+
             <button (click)="deleteTask(task.id ?? 0)" class="text-red-600 hover:text-red-900">
               <i class="fas fa-trash"></i>
             </button>
@@ -55,5 +56,71 @@
         </tr>
       </tbody>
     </table>
+  </div>
+
+  <div class="modal" [class.hidden]="!showEditModal">
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+      <div class="bg-white p-6 rounded-lg shadow-lg w-1/2">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-bold">Edit Task</h2>
+          <button (click)="showEditModal = false" class="text-gray-500 hover:text-gray-700">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <form (ngSubmit)="submitEdit()" *ngIf="editingTask">
+          <div class="mb-4">
+            <label for="title" class="block text-gray-700 font-medium mb-2">Title</label>
+            <input
+              type="text"
+              id="title"
+              name="title"
+              [(ngModel)]="editingTask.title"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            >
+          </div>
+          
+          <div class="mb-4">
+            <label for="description" class="block text-gray-700 font-medium mb-2">Description</label>
+            <textarea
+              id="description"
+              name="description"
+              [(ngModel)]="editingTask.description"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              rows="3"
+            ></textarea>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-gray-700 font-medium mb-2">Status</label>
+            <select
+              [(ngModel)]="editingTask.status"
+              name="status"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="pending">Pending</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+          
+          <div class="flex justify-end gap-2">
+            <button
+              type="button"
+              (click)="showEditModal = false"
+              class="px-4 py-2 text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600"
+            >
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </div>
